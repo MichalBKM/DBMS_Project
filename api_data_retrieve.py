@@ -1,7 +1,7 @@
 import requests
 import json
 
-# OUR DBMS PROJECT: comedy movies from 2024
+# OUR DBMS PROJECT: comedy movies (genre id = 35) from 2024
 
 API_KEY = '82cd47774ed6c624ce7b0e24a89048c3' # my api key from TMDB website
 BASE_URL = 'https://api.themoviedb.org/3/'
