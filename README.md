@@ -1,7 +1,7 @@
 # DBMS_Project
 DBMS Final Assignment in CS course 0368-2458 | 2024-2025
 
-**Comedy movies released in 2024**
+**Best 1000 comedy movies of all times**
 
 ## Group Members:
   * Michal Berkheim
