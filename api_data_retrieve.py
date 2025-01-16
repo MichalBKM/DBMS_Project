@@ -43,7 +43,7 @@ def fetch_movies(page):
 
 def insert_movie(movie):
     # insert movie into movie table
-    movie_query = """INSERT INTO movie (title, release_year, runtime, overview, popularity, votes_average, votes_count)
+    movie_query = """INSERT INTO movie (title, release_year, runtime, overview, popularity, vote_average, vote_count)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)"""
     values = (
         movie.get('title'),
