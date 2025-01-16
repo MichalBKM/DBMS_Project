@@ -3,9 +3,11 @@
 '''
 import
 '''
+import os
 import requests
 import json
 import logging
+import mysql.connector
 from create_db_script import db, cursor
 
 logging.basicConfig(level=logging.INFO)
@@ -13,21 +15,30 @@ logging.basicConfig(level=logging.INFO)
 '''
 General Settings
 '''
-API_KEY = '82cd47774ed6c624ce7b0e24a89048c3'  # your API key from TMDB website
+API_KEY = os.getenv('TMDB_API_KEY','82cd47774ed6c624ce7b0e24a89048c3')  # your API key from TMDB website
 BASE_URL = 'https://api.themoviedb.org/3/'
-OUTPUT_FILE = 'movies.json'
-GENRE_ID = 35  # Genre ID for comedy movies
 LANG = 'en'
 REGION = 'US'
+GENRE_ID = 35  # Genre ID for comedy movies
+
+'''
+fetch helper function
+'''
+def fetch_data(endpoint, params):
+    url = BASE_URL + endpoint
+    params['api_key'] = API_KEY
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logging.error(f"Error: Failed to fetch {endpoint}: {response.status_code}")
+        return None
 
 '''
 Movie Handling
 '''
-
 def fetch_movies(page):
-    url = BASE_URL + 'discover/movie'
-    params = {
-        'api_key': API_KEY,
+    return fetch_data('discover/movie', {
         'with_genres': GENRE_ID,
         'language': LANG,
         'with_original_language': LANG,
@@ -36,16 +47,7 @@ def fetch_movies(page):
         'sort_by': 'vote_average.desc',
         'vote_count.gte': 500,
         'page': page,
-    }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        if page == 1:
-            logging.info(f"Found {data['total_results']} Movies")
-        return data
-    else:
-        logging.info("Error: Failed to fetch data: " + str(response.status_code))
-        return None
+    })
 
 def insert_movie(movie):
     # insert movie into movie table
@@ -60,15 +62,22 @@ def insert_movie(movie):
         movie.get('vote_average'),
         movie.get('vote_count')
     )
-    cursor.execute(movie_query, values)
-    db.commit()
-
-    # Insert genres into movie_genre table
-    genre_query =  """INSERT INTO movie_genre (movie_id, genre_id)
-                    VALUES (%s, %s)"""
-    for genre_id in movie.get('genre_ids'):
-        cursor.execute(genre_query, (movie["id"], genre_id))
+    try:
+        cursor.execute(movie_query, values)
         db.commit()
+    except mysql.connector.Error as e:
+        logging.error(f"Error: Failed to insert movie {movie.get('title')}: {e}")
+    
+    # Insert genres into movie_genre table
+    try:
+        genre_query =  """INSERT INTO movie_genre (movie_id, genre_id)
+                        VALUES (%s, %s)"""
+        for genre_id in movie.get('genre_ids'):
+            cursor.execute(genre_query, (movie["id"], genre_id))
+            db.commit()
+    except mysql.connector.Error as e:
+        logging.error(f"Error: Failed to insert genre for movie {movie.get('title')}: {e}")
+
 
 def process_movie(movie):
     insert_movie(movie)
@@ -88,6 +97,7 @@ def populate_movies():
         data = fetch_movies(page)
         if not data:
             break
+        total_pages = data.get('total_pages',1)
         for movie in data["results"]:
             process_movie(movie)
         page += 1
@@ -98,31 +108,22 @@ Genre Handling
 '''
 
 def fetch_genres():
-    url = BASE_URL + 'genre/movie/list'
-    params = {
-        'api_key': API_KEY,
-        'language': LANG
-    }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        return response.json()["genres"]
-    else:
-        logging.info("Error: Failed to fetch genres: " + str(response.status_code))
-        return None
-
+    return fetch_data('genre/movie/list', {'language': LANG})
 
 def insert_genre(genre):
     query = """INSERT INTO genre (genre_id, genre_name)
             VALUES (%s, %s)"""
     values = (genre['id'], genre['name'])
-    cursor.execute(query, values)
-    db.commit()
-
+    try:
+        cursor.execute(query, values)
+        db.commit()
+    except mysql.connector.Error as e:
+        logging.error(f"Error: Failed to insert genre {genre['name']}: {e}")
 
 def populate_genres():
     genres = fetch_genres()
     if genres:
-        for genre in genres:
+        for genre in genres.get('genres',[]):
             insert_genre(genre)
 
 '''
@@ -130,16 +131,7 @@ Movie Cast and Crew Handling
 '''
 
 def fetch_credits(movie_id):
-    url = BASE_URL + f'movie/{movie_id}/credits'
-    params = {
-        'api_key': API_KEY,
-    }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        logging.info(f"Error: Failed to fetch cast for movie {movie_id}: " + str(response.status_code))
-        return None
+    return fetch_data(f'movie/{movie_id}/credits', {})
 
 
 def insert_person(person, role):
@@ -220,7 +212,12 @@ def populate_movie_keywords(movie_id):
 
 
 def main():
+    logging.info("Populating genres...")
+    populate_genres()
+    logging.info("Done populating genres.")
+    logging.info("Populating movies...")
     populate_movies()
+    logging.info("Database populated successfully.")
     
 
 if __name__ == '__main__':
