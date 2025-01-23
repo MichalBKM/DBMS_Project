@@ -8,4 +8,6 @@ DBMS Final Assignment in CS course 0368-2458 | 2024-2025
   * Michal Lahav
   * Reshit Carmel
 
-![logo](logo.png)
+
+<img src="/logo.png" width="300"/>
+
