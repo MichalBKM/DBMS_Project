@@ -19,8 +19,8 @@ cursor.execute("""CREATE TABLE movie (
                  runtime INT NOT NULL,
                  overview TEXT NOT NULL,
                  popularity FLOAT,
-                 votes_average FLOAT,
-                 votes_count INT
+                 vote_average FLOAT,
+                 vote_count INT
                  FULLTEXT (title)
 )""")
 
@@ -35,43 +35,28 @@ cursor.execute("""CREATE TABLE movie_genre (
                  movie_id INT,
                  genre_id INT,
                  PRIMARY KEY (movie_id, genre_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON DELETE CASCADE,
-                 FOREIGN KEY (genre_id) REFERENCES genre(genre_id) ON DELETE CASCADE
+                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                 FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
 )""")
 
-# actor: actor_id, actor_name, birth_date
-cursor.execute("""CREATE TABLE actor (
-                 actor_id INT AUTO_INCREMENT PRIMARY KEY,
-                 actor_name VARCHAR(255) NOT NULL,
-                 birth_date DATE NOT NULL
+# person: actor_id, actor_name, birth_date
+cursor.execute("""CREATE TABLE person (
+                 person_id INT AUTO_INCREMENT PRIMARY KEY,
+                 person_name VARCHAR(255) NOT NULL,
+                 birthday DATE NOT NULL,
+                 role ENUM('actor', 'director') NOT NULL
 )""")
 
 
-# movie cast: many to many relationship - data about the actors in a movie
-cursor.execute("""CREATE TABLE movie_cast (
+# movie person: many to many relationship - data about the actors in a movie
+cursor.execute("""CREATE TABLE movie_person (
                  movie_id INT,
-                 actor_id INT,
-                 PRIMARY KEY (movie_id, actor_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON DELETE CASCADE,
-                 FOREIGN KEY (actor_id) REFERENCES actor(actor_id) ON DELETE CASCADE
+                 person_id INT,
+                 PRIMARY KEY (movie_id, person_id),
+                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                 FOREIGN KEY (actor_id) REFERENCES actor(person_id)
 )""")
 
-
-# director: director_id, director_name, birth_date
-cursor.execute("""CREATE TABLE director (
-                 director_id INT AUTO_INCREMENT PRIMARY KEY,
-                 director_name VARCHAR(255) NOT NULL,
-                 birth_date DATE NOT NULL
-)""")
-
-# movie director: many to many relationship - data about the directors of a movie
-cursor.execute("""CREATE TABLE movie_director (
-                 movie_id INT,
-                 director_id INT,
-                 PRIMARY KEY (movie_id, director_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON DELETE CASCADE,
-                 FOREIGN KEY (director_id) REFERENCES director(director_id) ON DELETE CASCADE
-)""") 
 
 # keyword: keyword_id, keyword_name
 cursor.execute("""CREATE TABLE keyword (
@@ -84,6 +69,6 @@ cursor.execute("""CREATE TABLE movie_keyword (
                  movie_id INT,
                  keyword_id INT,
                  PRIMARY KEY (movie_id, keyword_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON DELETE CASCADE,
-                 FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id) ON DELETE CASCADE
+                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                 FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
 )""")
