@@ -91,7 +91,7 @@ def process_movie(movie):
     insert_movie(movie)
     populate_person(movie["id"])
     populate_movie_keywords(movie["id"])
-    logging.info(f"☑️  Inserted movie {movie.get('title')} into database.")
+    logging.info(f"☑️ Inserted movie {movie.get('title')} into database.")
 
 
 def populate_movies():
