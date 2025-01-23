@@ -51,17 +51,22 @@ def fetch_movies(page):
 
 def insert_movie(movie):
     # insert movie into movie table
-    movie_query = """INSERT INTO movie (title, release_year, runtime, overview, popularity, vote_average, vote_count)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+    movie_details = fetch_data(f'movie/{movie["id"]}', {})
+    runtime = movie_details.get('runtime', None)
+    movie_query = """INSERT INTO movie (movie_id, title, release_year, runtime, overview, popularity, vote_average, vote_count)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
     values = (
+        movie["id"],
         movie.get('title', 'Unknown Title'),
         movie.get('release_date')[:4],
-        movie.get('runtime'),
+        runtime,
         movie.get('overview'),
         movie.get('popularity'),
         movie.get('vote_average'),
         movie.get('vote_count')
     )
+    #printing values to check if the values are correct
+    #print("insert_movie:" , values)
     try:
         cursor.execute(movie_query, values)
         db.commit()
@@ -73,6 +78,8 @@ def insert_movie(movie):
         genre_query =  """INSERT INTO movie_genre (movie_id, genre_id)
                         VALUES (%s, %s)"""
         for genre_id in movie.get('genre_ids'):
+            #printing values to check if the values are correct
+            #print("insert_genre:" , movie["id"], genre_id)
             cursor.execute(genre_query, (movie["id"], genre_id))
             db.commit()
     except mysql.connector.Error as e:
@@ -81,11 +88,10 @@ def insert_movie(movie):
 
 def process_movie(movie):
     insert_movie(movie)
-    logging.info("Done populating movies.")
     populate_person(movie["id"])
-    logging.info("Done populating cast and directors.")
     populate_movie_keywords(movie["id"])
-    logging.info("Done populating keywords.")
+    logging.info(f"Inserted movie {movie.get('title')} into database.")
+
 
 def populate_movies():
     total_pages = 1
@@ -132,13 +138,18 @@ Movie Cast and Crew Handling
 def fetch_person(movie_id):
     return fetch_data(f'movie/{movie_id}/credits', {})
 
-
-def insert_person(person):
-    query = f"""INSERT IGNORE INTO person (person_id, name, birthday, role)
+def insert_person(person, role):
+    query = f"""INSERT IGNORE INTO person (person_id, person_name, birthday, role)
             VALUES (%s, %s,%s, %s)"""
-    endpoint = "/person/{person_id}"
-    birthday = fetch_data(endpoint, {})['birthday']
-    values = (person['id'], person['name'], birthday, person['known_for_department'])
+    endpoint = f'person/{person["id"]}'
+    person_details = fetch_data(endpoint, {})
+    if person_details:
+        birthday = person_details.get('birthday', None)
+    else:
+        logging.error(f"Error: Failed to fetch person details for {person['id']}")
+    values = (person['id'], person['name'], birthday, role)
+    #printing values to check if the values are correct
+    #print(values)
     try:
         cursor.execute(query, values)
         db.commit()
@@ -146,10 +157,10 @@ def insert_person(person):
         logging.error(f"Error: Failed to insert person {person['name']}: {e}")
 
 
-def insert_movie_person(movie_id, person_id):
-    query = """INSERT INTO movie_person (movie_id, person_id) 
-            VALUES (%s, %s)"""
-    values = (movie_id, person_id)
+def insert_movie_person(movie_id, person_id, role):
+    query = """INSERT INTO movie_person (movie_id, person_id, role) 
+            VALUES (%s, %s, %s)"""
+    values = (movie_id, person_id, role)
     try:
         cursor.execute(query, values)
         db.commit()
@@ -159,15 +170,15 @@ def insert_movie_person(movie_id, person_id):
 def populate_person(movie_id):
     credits = fetch_person(movie_id)
     if credits:
-        for person in credits.get('cast')[:5]:
-            if person['known_for_department'] == 'Acting':
-                insert_person(person)
-                insert_movie_person(movie_id, person['id'])
+        for p in credits.get('cast')[:5]:
+            if p['known_for_department'] == 'Acting':
+                insert_person(p, "Acting")
+                insert_movie_person(movie_id, p['id'], 'Acting')
         
-        for person in credits.get('crew'):
-            if person['job'] == 'Director':
-                insert_person(person)
-                insert_movie_person(movie_id, person['id'])
+        for p in credits.get('crew'):
+            if p['job'] == 'Director':
+                insert_person(p, "Directing")
+                insert_movie_person(movie_id, p['id'], 'Directing')
 
 '''
 Keyword handling
@@ -192,7 +203,10 @@ def insert_keyword(keyword):
         cursor.execute(query, values)
         db.commit()
     except Exception as e:
-        logging.info(f"Error: Failed to insert keyword {keyword['name']}: {e}")
+        if not ('Duplicate entry' in str(e)):
+            #logging.info(f"Duplicate entry for keyword {keyword['name']}")
+        #else:
+            logging.error(f"Error: Failed to insert keyword {keyword['name']}: {e}")
 
 def insert_movie_keyword(movie_id, keyword_id):
     query = """INSERT INTO movie_keyword (movie_id, keyword_id)
