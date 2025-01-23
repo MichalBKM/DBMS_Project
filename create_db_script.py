@@ -101,6 +101,9 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS keyword (
                  keyword_name VARCHAR(255) UNIQUE NOT NULL
 )""")
 
+# Altering keyword table to support fulltext index
+cursor.execute("""ALTER TABLE keyword ADD FULLTEXT(keyword_name)""")
+
 print("✅ Done creating keyword table")
 
 # movie keyword: many to many relationship - data about the keywords of a movie
