@@ -1,14 +1,7 @@
 '''
 import
 '''
-import os
-import requests
-import json
-import logging
-import mysql.connector
-from create_db_script import db, cursor
-
-logging.basicConfig(level=logging.INFO)
+from create_db_script import cursor
 
 # hidden gems, sub-genres, actors, years - we can output not only strings but numbers :)
 # COMPLEX QUERY #3: "hidden gems"
@@ -62,6 +55,7 @@ def query_3():
 '''note that the sum of all the counts of an actor should !not! be equal to the total number of movies he participated in,
 because each movie can have multiple genres'''
 def query_4():
+    #TODO: fix query_4
     input_4 = input("Enter a specific year to see how many movies per genre each actor participated in (e.g., '1999'): ")
     query_4_text = """SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
                 FROM movie m, person p, movie_person m_p, movie_genre m_g, genre g
@@ -77,67 +71,22 @@ def query_4():
     cursor.execute(query_4_text, (input_4,))
     return cursor.fetchall()
 
-
-
-def main():
-    # Prompt the user for search keywords
-    #input_1 = input("Enter keywords to search for movies (e.g., 'funny comedy'): ")
-    # Execute the query
-    #print(f"\nSearching for movies with these words: '{input_1}'...\n")
-    #results = query_1(input_1)
+#TODO: query_5
+def query_5():
+    input_5 = input("Enter a specific year to see how many movies per genre each actor participated in (e.g., '1999'): ")
+    query_5_text = """SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
+                FROM movie m, person p, movie_person m_p, movie_genre m_g, genre g
+                WHERE m.release_year = %s
+                AND m.movie_id = m_p.movie_id
+                AND m_p.person_id = p.person_id
+                AND m.movie_id = m_g.movie_id
+                AND m_g.genre_id in (SELECT genre_id FROM genre
+                                    WHERE genre_id = m_g.genre_id 
+                                    )
+                GROUP BY p.person_name, g.genre_name 
     """
-    results = query_2()
-    # Display the results
-    if results:
-        print(f"Found {len(results)} movies matching your search:\n")
-        for movie in results:
-            title = movie[0]
-            print(f"Title: {title}")
-            print("-" * 50)  # Separator between movies
-    else:
-        print("No movies found matching your search.")
-    """
-
-    """
-    results = query_3()
-    # Display the results
-    if results:
-        print(f"Found {len(results)} movies matching your search:\n")
-        for movie in results:
-            title = movie[0]
-            print(f"Title: {title}")
-            print("-" * 50)  # Separator between movies
-    else:
-        print("No movies found matching your search.")
-    """
-    results = query_4()
-    # Display the results
-    if results:
-        print(f"Found {len(results)} movies matching your search in the specified year:\n")
-        for movie in results:
-            movie_count, genre_name, person_name = movie
-            print(f"actor: {person_name}")
-            print(f"genre_name: {genre_name}")
-            print(f"count: {movie_count}")
-            print("-" * 50)  # Separator between movies
-    else:
-        print("No movies found matching your search.")
-
-    '''
-    results = query_1()
-
-    # Display the results
-    if results:
-        print(f"Found {len(results)} movies matching your search:\n")
-        for movie in results:
-            title, overview = movie
-            print(f"Title: {title}")
-            print(f"Overview: {overview}")
-            print("-" * 50)  # Separator between movies
-    else:
-        print("No movies found matching your search.")
-'''
+    cursor.execute(query_5_text, (input_5,))
+    return cursor.fetchall()
 
 
-if __name__ == '__main__':
-    main()
+
