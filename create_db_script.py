@@ -6,7 +6,7 @@ db = mysql.connector.connect(
     user="berkheim1",
     password="berkheim5501"
 )
-
+#
 cursor = db.cursor()
 cursor.execute("USE berkheim1")
 #cursor.execute("CREATE DATABASE mydatabase")

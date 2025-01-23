@@ -48,7 +48,7 @@ def fetch_movies(page):
         'vote_count.gte': 500,
         'page': page,
     })
-
+#
 def insert_movie(movie):
     # insert movie into movie table
     movie_details = fetch_data(f'movie/{movie["id"]}', {})
