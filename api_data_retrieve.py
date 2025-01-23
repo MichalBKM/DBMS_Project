@@ -21,6 +21,7 @@ LANG = 'en'
 REGION = 'US'
 GENRE_ID = 35  # Genre ID for comedy movies
 
+
 '''
 Fetch helper function
 '''
@@ -31,7 +32,7 @@ def fetch_data(endpoint, params):
     if response.status_code == 200:
         return response.json()
     else:
-        logging.error(f"Error: Failed to fetch {endpoint}: {response.status_code}")
+        logging.error(f"❌ Error: Failed to fetch {endpoint}: {response.status_code}")
         return None
 
 '''
@@ -48,7 +49,7 @@ def fetch_movies(page):
         'vote_count.gte': 500,
         'page': page,
     })
-#
+
 def insert_movie(movie):
     # insert movie into movie table
     movie_details = fetch_data(f'movie/{movie["id"]}', {})
@@ -71,7 +72,7 @@ def insert_movie(movie):
         cursor.execute(movie_query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert movie {movie.get('title')}: {e}")
+        logging.error(f"❌ Error: Failed to insert movie {movie.get('title')}: {e}")
     
     # Insert genres into movie_genre table
     try:
@@ -83,14 +84,14 @@ def insert_movie(movie):
             cursor.execute(genre_query, (movie["id"], genre_id))
             db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert genre for movie {movie.get('title')}: {e}")
+        logging.error(f"❌ Error: Failed to insert genre for movie {movie.get('title')}: {e}")
 
 
 def process_movie(movie):
     insert_movie(movie)
     populate_person(movie["id"])
     populate_movie_keywords(movie["id"])
-    logging.info(f"Inserted movie {movie.get('title')} into database.")
+    logging.info(f"☑️  Inserted movie {movie.get('title')} into database.")
 
 
 def populate_movies():
@@ -107,7 +108,7 @@ def populate_movies():
         for movie in data["results"]:
             process_movie(movie)
         page += 1
-    logging.info("Done populating tables.")
+    logging.info("✅ Done populating tables.")
 
 '''
 Genre Handling
@@ -123,7 +124,7 @@ def insert_genre(genre):
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert genre {genre['name']}: {e}")
+        logging.error(f"❌ Error: Failed to insert genre {genre['name']}: {e}")
 
 def populate_genres():
     genres = fetch_genres()
@@ -146,7 +147,7 @@ def insert_person(person, role):
     if person_details:
         birthday = person_details.get('birthday', None)
     else:
-        logging.error(f"Error: Failed to fetch person details for {person['id']}")
+        logging.error(f"❌ Error: Failed to fetch person details for {person['id']}")
     values = (person['id'], person['name'], birthday, role)
     #printing values to check if the values are correct
     #print(values)
@@ -154,7 +155,7 @@ def insert_person(person, role):
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert person {person['name']}: {e}")
+        logging.error(f"❌ Error: Failed to insert person {person['name']}: {e}")
 
 
 def insert_movie_person(movie_id, person_id, role):
@@ -165,7 +166,7 @@ def insert_movie_person(movie_id, person_id, role):
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert movie-person {movie_id, person_id}: {e}")
+        logging.error(f"❌ Error: Failed to insert movie-person {movie_id, person_id}: {e}")
 
 def populate_person(movie_id):
     credits = fetch_person(movie_id)
@@ -192,7 +193,7 @@ def fetch_keywords(movie_id):
     if response.status_code == 200:
         return response.json()['keywords']
     else:
-        logging.info(f"Error: Failed to fetch keywords for movie {movie_id}: " + str(response.status_code))
+        logging.info(f"❌ Error: Failed to fetch keywords for movie {movie_id}: " + str(response.status_code))
         return None
 
 def insert_keyword(keyword):
@@ -206,7 +207,7 @@ def insert_keyword(keyword):
         if not ('Duplicate entry' in str(e)):
             #logging.info(f"Duplicate entry for keyword {keyword['name']}")
         #else:
-            logging.error(f"Error: Failed to insert keyword {keyword['name']}: {e}")
+            logging.error(f"❌ Error: Failed to insert keyword {keyword['name']}: {e}")
 
 def insert_movie_keyword(movie_id, keyword_id):
     query = """INSERT INTO movie_keyword (movie_id, keyword_id)
@@ -216,7 +217,7 @@ def insert_movie_keyword(movie_id, keyword_id):
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"Error: Failed to insert movie-keyword {movie_id, keyword_id}: {e}")
+        logging.error(f"❌ Error: Failed to insert movie-keyword {movie_id, keyword_id}: {e}")
 
 def populate_movie_keywords(movie_id):
     keywords = fetch_keywords(movie_id)
@@ -224,14 +225,42 @@ def populate_movie_keywords(movie_id):
         insert_keyword(keyword)
         insert_movie_keyword(movie_id, keyword['id'])
 
+
+def count_records(cursor, tables):
+    record_counts = {}
+
+    for table in tables:
+        query = f"SELECT COUNT(*) FROM {table}"
+        try:
+            cursor.execute(query)
+            count = cursor.fetchone()[0]
+            record_counts[table] = count
+            print(f"Total records in {table}: {count}")
+        except Exception as e:
+            print(f"❌ Error counting records in table {table}: {e}")
+            record_counts[table] = None
+
+    return record_counts
+
+
 def main():
     logging.info("Populating genres...")
     populate_genres()
-    logging.info("Done populating genres.")
+    logging.info("✅ Done populating genres.")
     logging.info("Populating movies...")
     populate_movies()
-    logging.info("Database populated successfully.")
+    print("====================================\n")
+    logging.info("🚀 Database populated successfully.")
     
+    tables = ['movie', 'genre', 'movie_genre', 'person', 'movie_person', 'keyword', 'movie_keyword']
+    count_records = count_records(cursor, tables)
+    print("=================================================\n")
+    print("Summary of record counts:\n")
+    for table, count in count_records.items():
+        print(f"{table}: {count} records")
+    print("=================================================\n")
+    print("Total number of records: ", sum(count_records))
+
 
 if __name__ == '__main__':
     main()
