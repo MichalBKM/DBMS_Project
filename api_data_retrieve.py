@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 '''
 General Settings
 '''
-API_KEY = os.getenv('TMDB_API_KEY','82cd47774ed6c624ce7b0e24a89048c3')  # your API key from TMDB website
+API_KEY = '82cd47774ed6c624ce7b0e24a89048c3'  # your API key from TMDB website
 BASE_URL = 'https://api.themoviedb.org/3/'
 LANG = 'en'
 REGION = 'US'
