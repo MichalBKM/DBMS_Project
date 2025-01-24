@@ -13,12 +13,13 @@ logging.basicConfig(level=logging.INFO)
 '''
 General Settings
 '''
-API_KEY = '82cd47774ed6c624ce7b0e24a89048c3'  # your API key from TMDB website
+API_KEY = '82cd47774ed6c624ce7b0e24a89048c3'  # our API key from TMDB website
 BASE_URL = 'https://api.themoviedb.org/3/'
 LANG = 'en'
 REGION = 'US'
 GENRE_ID = 35  # Genre ID for comedy movies
-MAX_PAGES = 50 # limit to 1000 movies - in each page theres 20 movies
+MAX_PAGES = 50 # limits to 1000 movies - in each page there are 20 movies
+               # (50 pages * 20 movies = 1000 movies)
 
 '''
 Fetch helper function
@@ -48,11 +49,15 @@ def fetch_movies(page):
         'page': page,
     })
 
+'''
+insering a given movie into the movie table, and its genres into the movie_genre table
+'''
 def insert_movie(movie, director_id):
     # insert movie into movie table
     movie_details = fetch_data(f'movie/{movie["id"]}', {})
     runtime = movie_details.get('runtime', None)
-    movie_query = """INSERT INTO movie (movie_id, title, director_id, release_year, runtime, overview, popularity, vote_average, vote_count)
+    movie_query = """INSERT INTO movie (movie_id, title, director_id, release_year, 
+                    runtime, overview, popularity, vote_average, vote_count)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     values = (
         movie["id"],
@@ -72,21 +77,21 @@ def insert_movie(movie, director_id):
     except mysql.connector.Error as e:
         logging.error(f"❌ Error: Failed to insert movie {movie.get('title')}: {e}")
     
-    # Insert genres into movie_genre table
+    # Insert genres into movie_genre table        
+    genre_query =  """INSERT INTO movie_genre (movie_id, genre_id) VALUES (%s, %s)"""
     try:
-        genre_query =  """INSERT INTO movie_genre (movie_id, genre_id)
-                        VALUES (%s, %s)"""
         for genre_id in movie.get('genre_ids'):
-            #printing values to check if the values are correct
-            #print("insert_genre:" , movie["id"], genre_id)
             cursor.execute(genre_query, (movie["id"], genre_id))
             db.commit()
     except mysql.connector.Error as e:
         logging.error(f"❌ Error: Failed to insert genre for movie {movie.get('title')}: {e}")
     
-    return movie["id"]
+    return movie["id"] # this return value allows us to insert rows into the 
+                       # movie_actor table without fetching the movie_id again
 
-
+'''
+adding all the information about a movie into the database (the movie itself, its crew, and its keywords)
+'''
 def process_movie(movie):
     crew = populate_person(movie["id"])
     director_id = crew[0]
@@ -96,7 +101,9 @@ def process_movie(movie):
     populate_movie_keywords(movie["id"])
     logging.info(f"☑️  Inserted movie {movie.get('title')} into database.")
 
-
+'''
+TODO
+'''
 def populate_movies():
     total_pages = 1
     page = 1

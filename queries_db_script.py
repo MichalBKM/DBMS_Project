@@ -3,15 +3,13 @@ import
 '''
 from create_db_script import cursor
 
-# hidden gems, sub-genres, actors, years - we can output not only strings but numbers :)
-# COMPLEX QUERY #3: "hidden gems"
-# COMPLEX QUERY #4  "by year"
-# COMPLEX QUERY #5 "directors' popular movies"
 
 #1 FULL-TEXT - Search words that appear in the movie title or overview
 # what details we want to return except title\overview
 def query_1():
-    input_1 = input("Enter words to search in movie titles\overview (e.g., 'Modern'): \n")
+    print("you can find the movie you want even if you don't remember the title, \
+           just enter a word that appears in the title or overview!\n")
+    input_1 = input("Enter words to search in movie the title \ overview (e.g., 'Modern'): \n")
     query_1_text = "SELECT title, overview FROM movie WHERE MATCH(title, overview) AGAINST(%s);"
     cursor.execute(query_1_text, (input_1,))
     return cursor.fetchall()
@@ -19,7 +17,8 @@ def query_1():
 #2 FULL-TEXT - Search keywords that are related to movies
 # what details we want to return except title
 def query_2():
-    input_2 = input("Enter keyword to see in what movies it appears in (e.g., 'silent film'): \n")
+    print("you can find movies that are related to a specific keyword, just enter the keyword!\n")
+    input_2 = input("Enter a keyword to see what movies are related to it (e.g., 'silent film'): \n")
     query_2_text = """SELECT m.title 
                  FROM movie m, keyword k, movie_keyword m_k 
                  WHERE   m_k.movie_id = m.movie_id       AND
@@ -29,32 +28,8 @@ def query_2():
     cursor.execute(query_2_text, (input_2,))
     return cursor.fetchall()
 
-"""""
-WITH RankedMovies AS (
-    SELECT
-        title,
-        director,
-        rating,
-        ROW_NUMBER() OVER (PARTITION BY director ORDER BY rating DESC) AS rank
-    FROM
-        movies
-)
-SELECT
-    title,
-    director,
-    rating
-FROM
-    RankedMovies
-WHERE
-    rank <= 3
-ORDER BY
-    director,
-    rank;
-"""
-
-
 #3 COMPLEX QUERY - 3 highest rated movies for a given director
-def query_3():
+def query_3(): #TODO
     input_3 = input("Enter director's name to see their highest rated movie (e.g., 'Steven Spielberg'): ")
     if False:
         query_3_text = """" SELECT m.title 
@@ -143,11 +118,34 @@ def query_5():
     cursor.execute(query_5_text, (input_5,))
     return cursor.fetchall()
 
+#more complex queries options:
+#6 COMPLEX QUERY: what actors have appeared in the 10 most popular movies of a given director and how many times they appeared?
+def query_6():
+    print("Find the actors who appeared in the 10 most popular movies of your favourite director and how many times they appeared!\n")
+    input_6 = input("Enter a director's name (e.g, 'John Lasseter'): \n")
+    query_6_text = """SELECT p.person_name, COUNT(m_a.actor_id) AS actor_count, p.person_id
+                    FROM (
+                            SELECT m.movie_id
+                            FROM movie m, director d
+                            WHERE m.director_id = d.director_id
+                            AND d.director_name LIKE %s
+                            ORDER BY m.popularity DESC
+                            LIMIT 10
+                    ) AS top_movies, movie_actor m_a, person p
+                    WHERE top_movies.movie_id = m_a.movie_id
+                    AND m_a.actor_id = p.person_id
+                    GROUP BY p.person_name, p.person_id
+                    ORDER BY actor_count DESC;
+                    """
+  
+    cursor.execute(query_6_text, (f"%{input_6}%",))
+    return cursor.fetchall()
+
 ############################################
 #           copilot suggestions:           #
 ############################################
 #6 QUERY: "directors' popular movies" - for a given director, output their most popular movies
-def query_6():
+def query_6c():
     print("we will now present the most popular movies for a given director\n")
     input_6 = input("Enter a director's name to see their most popular movies (e.g, 'Steven Spielberg'): \n")
     query_6_text = """SELECT m.title, m.popularity
@@ -313,39 +311,6 @@ def query_15():
     cursor.execute(query_15_text, (f"%{input_15}%",))
     return cursor.fetchall()
 
-#16 QUERY: "actors' highest rated genres" - for a given actor, output the genres they have appeared in the highest rated movies
-def query_16():
-    print("we will now present the genres a given actor has appeared in the highest rated movies\n")
-    input_16 = input("Enter an actor's name to see the genres they have appeared in the highest rated movies (e.g, 'Tom Hanks'): \n")
-    query_16_text = """SELECT g.genre_name, m.vote_average
-                        FROM movie m
-                        JOIN movie_actor m_a ON m.movie_id = m_a.movie_id
-                        JOIN actor a ON m_a.actor_id = a.actor_id
-                        JOIN person p ON a.actor_id = p.person_id
-                        JOIN movie_genre m_g ON m.movie_id = m_g.movie_id
-                        JOIN genre g ON m_g.genre_id = g.genre_id
-                        WHERE p.person_name LIKE %s
-                        ORDER BY m.vote_average DESC;
-    """
-    cursor.execute(query_16_text, (f"%{input_16}%",))
-    return cursor.fetchall()
-
-#17 QUERY: "actors' most popular genres" - for a given actor, output the genres they have appeared in the most popular movies
-def query_17():
-    print("we will now present the genres a given actor has appeared in the most popular movies\n")
-    input_17 = input("Enter an actor's name to see the genres they have appeared in the most popular movies (e.g, 'Tom Hanks'): \n")
-    query_17_text = """SELECT g.genre_name, m.popularity
-                        FROM movie m
-                        JOIN movie_actor m_a ON m.movie_id = m_a.movie_id
-                        JOIN actor a ON m_a.actor_id = a.actor_id
-                        JOIN person p ON a.actor_id = p.person_id
-                        JOIN movie_genre m_g ON m.movie_id = m_g.movie_id
-                        JOIN genre g ON m_g.genre_id = g.genre_id
-                        WHERE p.person_name LIKE %s
-                        ORDER BY m.popularity DESC;
-    """
-    cursor.execute(query_17_text, (f"%{input_17}%",))
-    return cursor.fetchall()
 
 
 
