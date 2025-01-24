@@ -6,7 +6,7 @@ from queries_db_script import query_1, query_2, query_3, query_4, query_5
 
 
 def main():
-    num = int(input("what query do you wish to use? "))
+    num = int(input("what query do you wish to use?     "))
     ####################
     #      QUERY 1     #
     ####################
@@ -14,7 +14,7 @@ def main():
         results = query_1()
         # Display the results in a way that fits the query
         if results:
-            print(f"Found {len(results)} movies matching your search:\n")
+            print(f"\nFound {len(results)} movies matching your search:\n")
             for movie in results:
                 title, overview = movie
                 print(f"Title: {title}")
@@ -30,7 +30,7 @@ def main():
         results = query_2()
         # Display the results in a way that fits the query
         if results:
-            print(f"Found {len(results)} movies matching your search:\n")
+            print(f"\nFound {len(results)} movies matching your search:\n")
             for movie in results:
                 title = movie[0]
                 print(f"Title: {title}")
@@ -45,7 +45,7 @@ def main():
         results = query_3()
         # Display the results in a way that fits the query
         if results:
-            print(f"Found {len(results)} movies matching your search:\n")
+            print(f"\nFound {len(results)} movies matching your search:\n")
             for movie in results:
                 title = movie[0]
                 print(f"Title: {title}")
@@ -60,7 +60,7 @@ def main():
         results = query_4()
         # Display the results in a way that fits the query
         if results:
-            print(f"Found {len(results)} movies matching your search in the specified decade and subgenre:\n")
+            print(f"\nFound {len(results)} movies matching your search in the specified decade and subgenre:\n")
             for movie in results:
                 movie_count, person_name = movie[0:2]
                 print(f"actor: {person_name}")
@@ -77,7 +77,7 @@ def main():
         results = query_5()
         # Display the results in a way that fits the query
         if results:
-            print(f"Found {len(results)} \"hidden gems\" in the specified year:\n")
+            print(f"\nFound {len(results)} \"hidden gems\" in the specified year:\n")
             for movie in results:
                 title, avg_rating, popularity = movie
                 print(f"Title: {title}")
