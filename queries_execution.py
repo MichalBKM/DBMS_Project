@@ -57,24 +57,26 @@ def main():
     #      QUERY 4     #
     ####################
     elif num == 4:
-        return
-    """"
-    results = query_4()
-    # Display the results in a way that fits the query
-    if results:
-        print(f"Found {len(results)} movies matching your search in the specified year:\n")
-        for movie in results:
-            movie_count, genre_name, person_name = movie
-            print(f"actor: {person_name}")
-            print(f"genre_name: {genre_name}")
-            print(f"count: {movie_count}")
-            print("-" * 50)  # Separator between movies
-    else:
-        print("No movies found matching your search.")
-    """
+        results = query_4()
+        # Display the results in a way that fits the query
+        if results:
+            print(f"Found {len(results)} movies matching your search in the specified decade and subgenre:\n")
+            for movie in results:
+                movie_count, person_name = movie[0:1]
+                print(f"actor: {person_name}")
+                print(f"count: {movie_count}")
+                print("-" * 50)  # Separator between movies
+        else:
+            print("No movies found matching your search.")
+        
+        
     ####################
     #      QUERY 5     #
     ####################
+    elif num == 5:
+        print("Query 5")
+        return
+
 
 
     

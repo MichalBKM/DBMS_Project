@@ -18,7 +18,7 @@ BASE_URL = 'https://api.themoviedb.org/3/'
 LANG = 'en'
 REGION = 'US'
 GENRE_ID = 35  # Genre ID for comedy movies
-MAX_PAGES = 3 # limit to 1000 movies - in each page theres 20 movies
+MAX_PAGES = 50 # limit to 1000 movies - in each page theres 20 movies
 
 '''
 Fetch helper function
@@ -237,7 +237,7 @@ def insert_movie_keyword(movie_id, keyword_id):
 
 def populate_movie_keywords(movie_id):
     keywords = fetch_keywords(movie_id)
-    for keyword in keywords:
+    for keyword in keywords[:5]: #limit to the first 5 keywords for each movie - the most important
         insert_keyword(keyword)
         insert_movie_keyword(movie_id, keyword['id'])
 

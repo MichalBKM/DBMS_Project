@@ -102,6 +102,33 @@ def query_3():
                     """
 
 
+#4 COMPLEX QUERY: "hall of fame" - for a given decade and sub-genre of comedy, 
+# output the first 10 actors who played in the most movies of that sub-genre in that decade
+def query_4():
+    input_4 = input("Enter a decade and a sub-genre to see the hall of fame for that sub-genre in that decade (e.g, '1960 horror'):")
+    decade_start, sub_genre = input_4.split(" ")
+    decade_start = int(decade_start)
+    decade_end = decade_start + 9
+    query_4_text = """SELECT COUNT(m.movie_id) as movie_count, p.person_name, p.person_id
+                FROM movie m, person p, movie_actor m_a, movie_genre m_g, genre g, actor a
+                WHERE m.release_year =< %s
+                AND m.release_year >= %s
+                AND m.movie_id = m_a.movie_id
+                AND m_a.actor_id = a.actor_id
+                AND a.actor_id = p.person_id
+                AND m.movie_id = m_g.movie_id
+                AND m_g.genre_id = g.genre_id
+                AND g.genre_name = %s
+                GROUP BY p.person_name, p.person_id 
+                ORDER BY movie_count DESC
+                LIMIT 10
+    """
+    values = (decade_end, decade_start, sub_genre)
+    cursor.execute(query_4_text, values)
+    return cursor.fetchall()
+
+
+"""
 #TODO: the query for a range of years!
 #4 COMPLEX QUERY: For each actor in a specific year (maybe for a specific decade - 1960s), in how many movie per genre he participated (group by)
 '''note that the sum of all the counts of an actor should !not! be equal to the total number of movies he participated in,
@@ -109,7 +136,7 @@ because each movie can have multiple genres'''
 def query_4():
     #TODO: fix query_4
     input_4 = input("Enter a specific year to see how many movies per genre each actor participated in (e.g., '1999'): ")
-    query_4_text = """SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
+    query_4_text = SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
                 FROM movie m, person p, movie_person m_p, movie_genre m_g, genre g
                 WHERE m.release_year = %s
                 AND m.movie_id = m_p.movie_id
@@ -119,15 +146,16 @@ def query_4():
                                     WHERE genre_id = m_g.genre_id 
                                     )
                 GROUP BY p.person_name, g.genre_name 
-    """
+    
     cursor.execute(query_4_text, (input_4,))
     return cursor.fetchall()
+
 
 #TODO: query_5
 def query_5():
     input_5 = input("Enter a specific year to see how many movies per genre each actor participated in (e.g., '1999'): ")
-    query_5_text = """SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
-                FROM movie m, person p, movie_person m_p, movie_genre m_g, genre g
+    query_5_text = SELECT COUNT(m.movie_id) as movie_count, g.genre_name, p.person_name
+                FROM movie m, person p, movie_actor m_p, movie_genre m_g, genre g
                 WHERE m.release_year = %s
                 AND m.movie_id = m_p.movie_id
                 AND m_p.person_id = p.person_id
@@ -136,9 +164,9 @@ def query_5():
                                     WHERE genre_id = m_g.genre_id 
                                     )
                 GROUP BY p.person_name, g.genre_name 
-    """
+    
     cursor.execute(query_5_text, (input_5,))
     return cursor.fetchall()
-
+"""
 
 
