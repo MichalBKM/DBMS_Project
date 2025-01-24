@@ -74,18 +74,17 @@ def query_3():
                 """
     else:
         query_3_text = """
-    SELECT m.title
-    FROM movie m
-    JOIN person p ON m.director_id = p.person_id
-    JOIN director d ON p.person_id = d.director_id
-    WHERE p.person_name LIKE %s
-    AND m.vote_average = (
+        SELECT m.title
+        FROM movie m
+        JOIN person p ON m.director_id = p.person_id
+        WHERE p.person_name LIKE %s
+        AND m.vote_average = (
                         SELECT MAX(m2.vote_average)
                         FROM movie m2
                         JOIN person p2 ON m2.director_id = p2.person_id
-                        JOIN director d2 ON p2.person_id = d2.director_id
-                        WHERE p.person_name LIKE %s
+                        WHERE p2.person_name LIKE %s
                         )
+        LIMIT 1
     """
     cursor.execute(query_3_text, (f"%{input_3}%",f"%{input_3}%"))
     return cursor.fetchall()

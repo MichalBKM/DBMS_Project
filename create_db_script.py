@@ -29,125 +29,128 @@ def index_exists(table_name, index_name):
     """)
     return cursor.fetchone()[0] > 0
 
+def create_tables():
+    # genre
+    cursor.execute("""CREATE TABLE IF NOT EXISTS genre (
+                    genre_id INT PRIMARY KEY,
+                    genre_name VARCHAR(255) NOT NULL
+    )""")
 
-# genre
-cursor.execute("""CREATE TABLE IF NOT EXISTS genre (
-                 genre_id INT PRIMARY KEY,
-                 genre_name VARCHAR(255) NOT NULL
-)""")
-
-print("✅ Done creating genre table")
-
-
-# person: person_id, person_name, birth_date
-cursor.execute("""CREATE TABLE IF NOT EXISTS person (
-                 person_id INT NOT NULL,
-                 person_name VARCHAR(255) NOT NULL,
-                 birthday DATE NOT NULL,
-                 PRIMARY KEY (person_id)
-)""")
-
-print("✅ Done creating person table")
-
-# director: director_id (is-a person)
-cursor.execute("""CREATE TABLE IF NOT EXISTS director (
-                 director_id INT NOT NULL,
-                 PRIMARY KEY (director_id),
-                 FOREIGN KEY (director_id) REFERENCES person(person_id)
-)""")
-
-print("✅ Done creating director table")
-
-# actor: actor_id (is-a person)
-cursor.execute("""CREATE TABLE IF NOT EXISTS actor (
-                 actor_id INT NOT NULL,
-                 PRIMARY KEY (actor_id),
-                 FOREIGN KEY (actor_id) REFERENCES person(person_id)
-)""")
-
-print("✅ Done creating actor table")
+    print("✅ Done creating genre table")
 
 
-# movie: movie_id, title, director_id, release_year, runtime, overview, popularity, votes_average, votes_count
-# (many to one relationship - director_id is a foreign key to director_id)
-cursor.execute("""CREATE TABLE IF NOT EXISTS movie (
-                 movie_id INT PRIMARY KEY,
-                 title VARCHAR(255) NOT NULL,
-                 director_id INT NOT NULL,
-                 release_year INT NOT NULL,
-                 runtime INT NOT NULL,
-                 overview TEXT NOT NULL,
-                 popularity FLOAT,
-                 vote_average FLOAT,
-                 vote_count INT,
-                 FOREIGN KEY (director_id) REFERENCES director(director_id)
-)""")
+    # person: person_id, person_name, birth_date
+    cursor.execute("""CREATE TABLE IF NOT EXISTS person (
+                    person_id INT NOT NULL,
+                    person_name VARCHAR(255) NOT NULL,
+                    birthday DATE NOT NULL,
+                    PRIMARY KEY (person_id)
+    )""")
 
-# Altering movie table to support fulltext index
-cursor.execute("""ALTER TABLE movie ADD FULLTEXT(title, overview)""")
+    print("✅ Done creating person table")
 
-# Create index to support filtering movies by year
-if not index_exists("movie", "idx_release_year"):
-    cursor.execute("""CREATE INDEX idx_release_year ON movie(release_year)""")
+    # director: director_id (is-a person)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS director (
+                    director_id INT NOT NULL,
+                    PRIMARY KEY (director_id),
+                    FOREIGN KEY (director_id) REFERENCES person(person_id)
+    )""")
 
-# Create index to support filtering movies by popularity
-if not index_exists("movie", "idx_popularity"):
-    cursor.execute("""CREATE INDEX idx_popularity ON movie(popularity)""")
+    print("✅ Done creating director table")
 
-# Create index to support filtering movies by vote average
-if not index_exists("movie", "idx_vote_average"):
-    cursor.execute("""CREATE INDEX idx_vote_average ON movie(vote_average)""")
+    # actor: actor_id (is-a person)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS actor (
+                    actor_id INT NOT NULL,
+                    PRIMARY KEY (actor_id),
+                    FOREIGN KEY (actor_id) REFERENCES person(person_id)
+    )""")
 
-print("\n✅ Done creating movie table")
-# movie genre: many to many relationship - there can be multiple genres for a movie
-cursor.execute("""CREATE TABLE IF NOT EXISTS movie_genre (
-                 movie_id INT,
-                 genre_id INT,
-                 PRIMARY KEY (movie_id, genre_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
-                 FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
-)""")
+    print("✅ Done creating actor table")
 
-print("✅ Done creating movie-genre table")
 
-# movie_actor: many to many relationship - data about the actors in a movie
-cursor.execute("""CREATE TABLE IF NOT EXISTS movie_actor (
-                 movie_id INT,
-                 actor_id INT,
-                 PRIMARY KEY (movie_id, actor_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
-                 FOREIGN KEY (actor_id) REFERENCES actor(actor_id)
-)""")
+    # movie: movie_id, title, director_id, release_year, runtime, overview, popularity, votes_average, votes_count
+    # (many to one relationship - director_id is a foreign key to director_id)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS movie (
+                    movie_id INT PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    director_id INT NOT NULL,
+                    release_year INT NOT NULL,
+                    runtime INT NOT NULL,
+                    overview TEXT NOT NULL,
+                    popularity FLOAT,
+                    vote_average FLOAT,
+                    vote_count INT,
+                    FOREIGN KEY (director_id) REFERENCES director(director_id)
+    )""")
 
-# Create index to support filtering/searching actors or directors by name
-#if not index_exists("actor", "idx_role_name"):
-#    cursor.execute("""CREATE INDEX idx_role_name ON person(role, actor_id)""")
+    # Altering movie table to support fulltext index
+    cursor.execute("""ALTER TABLE movie ADD FULLTEXT(title, overview)""")
 
-print("✅ Done creating movie_actor table")
+    # Create index to support filtering movies by year
+    if not index_exists("movie", "idx_release_year"):
+        cursor.execute("""CREATE INDEX idx_release_year ON movie(release_year)""")
 
-# keyword: keyword_id, keyword_name
-cursor.execute("""CREATE TABLE IF NOT EXISTS keyword (
-                 keyword_id INT PRIMARY KEY,
-                 keyword_name VARCHAR(255) UNIQUE NOT NULL
-)""")
+    # Create index to support filtering movies by popularity
+    if not index_exists("movie", "idx_popularity"):
+        cursor.execute("""CREATE INDEX idx_popularity ON movie(popularity)""")
 
-# Altering keyword table to support fulltext index
-cursor.execute("""ALTER TABLE keyword ADD FULLTEXT(keyword_name)""")
+    # Create index to support filtering movies by vote average
+    if not index_exists("movie", "idx_vote_average"):
+        cursor.execute("""CREATE INDEX idx_vote_average ON movie(vote_average)""")
 
-print("✅ Done creating keyword table")
+    print("\n✅ Done creating movie table")
+    # movie genre: many to many relationship - there can be multiple genres for a movie
+    cursor.execute("""CREATE TABLE IF NOT EXISTS movie_genre (
+                    movie_id INT,
+                    genre_id INT,
+                    PRIMARY KEY (movie_id, genre_id),
+                    FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                    FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
+    )""")
 
-# movie keyword: many to many relationship - data about the keywords of a movie
-cursor.execute("""CREATE TABLE IF NOT EXISTS movie_keyword (
-                 movie_id INT,
-                 keyword_id INT,
-                 PRIMARY KEY (movie_id, keyword_id),
-                 FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
-                 FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
-)""")
+    print("✅ Done creating movie-genre table")
 
-print("✅ Done creating movie-keyword table")
+    # movie_actor: many to many relationship - data about the actors in a movie
+    cursor.execute("""CREATE TABLE IF NOT EXISTS movie_actor (
+                    movie_id INT,
+                    actor_id INT,
+                    PRIMARY KEY (movie_id, actor_id),
+                    FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                    FOREIGN KEY (actor_id) REFERENCES actor(actor_id)
+    )""")
 
-db.commit()
+    # Create index to support filtering/searching actors or directors by name
+    #if not index_exists("actor", "idx_role_name"):
+    #    cursor.execute("""CREATE INDEX idx_role_name ON person(role, actor_id)""")
 
-print("====================================\n")
-print("🚀 Done creating database successfully!\n")
+    print("✅ Done creating movie_actor table")
+
+    # keyword: keyword_id, keyword_name
+    cursor.execute("""CREATE TABLE IF NOT EXISTS keyword (
+                    keyword_id INT PRIMARY KEY,
+                    keyword_name VARCHAR(255) UNIQUE NOT NULL
+    )""")
+
+    # Altering keyword table to support fulltext index
+    cursor.execute("""ALTER TABLE keyword ADD FULLTEXT(keyword_name)""")
+
+    print("✅ Done creating keyword table")
+
+    # movie keyword: many to many relationship - data about the keywords of a movie
+    cursor.execute("""CREATE TABLE IF NOT EXISTS movie_keyword (
+                    movie_id INT,
+                    keyword_id INT,
+                    PRIMARY KEY (movie_id, keyword_id),
+                    FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
+                    FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
+    )""")
+
+    print("✅ Done creating movie-keyword table")
+
+    db.commit()
+
+    print("====================================\n")
+    print("🚀 Done creating database successfully!\n")
+
+if __name__ == '__main__':
+    create_tables()
