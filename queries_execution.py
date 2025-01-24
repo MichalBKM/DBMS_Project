@@ -62,7 +62,7 @@ def main():
         if results:
             print(f"Found {len(results)} movies matching your search in the specified decade and subgenre:\n")
             for movie in results:
-                movie_count, person_name = movie[0:1]
+                movie_count, person_name = movie[0:2]
                 print(f"actor: {person_name}")
                 print(f"count: {movie_count}")
                 print("-" * 50)  # Separator between movies
