@@ -119,7 +119,7 @@ def fetch_genres():
     return fetch_data('genre/movie/list', {'language': LANG})
 
 def insert_genre(genre):
-    query = """INSERT INTO genre (genre_id, genre_name)
+    query = """INSERT IGNORE INTO genre (genre_id, genre_name)
             VALUES (%s, %s)"""
     values = (genre['id'], genre['name'])
     try:
@@ -157,10 +157,10 @@ def insert_person(person, role):
     else:
         logging.error(f"❌ Error: Failed to fetch person details for {person['id']}")
     values = (person['id'], person['name'], birthday)
-    values_with_role = (person['id'])
+    values_with_role = (person['id'],)
     try:
-        cursor.execute(query_with_role, values_with_role)
         cursor.execute(query, values)
+        cursor.execute(query_with_role, values_with_role)
         db.commit()
     except mysql.connector.Error as e:
         logging.error(f"❌ Error: Failed to insert person {person['name']}: {e}")
@@ -178,7 +178,7 @@ def insert_movie_actor(movie_id, actor_id):
 
 def populate_person(movie_id):
     credits = fetch_person(movie_id)
-    has_director = False
+    has_director = False # used to look only at the main director (the first one mentioned in tmdb)
     crew = [] # the director will be the first person in the crew list, meaning crew[0] = director_id
               # the rest of the crew will be actors, indices 1-5
               # we need to return the id of the director to insert into the movie table
@@ -251,9 +251,9 @@ def count_records(cursor, tables):
             cursor.execute(query)
             count = cursor.fetchone()[0]
             record_counts[table] = count
-            print(f"Total records in {table}: {count}")
+            logging.info(f"Total records in {table}: {count}")
         except Exception as e:
-            print(f"❌ Error counting records in table {table}: {e}")
+            logging.error(f"❌ Error counting records in table {table}: {e}")
             record_counts[table] = None
 
     return record_counts
@@ -269,13 +269,14 @@ def main():
     logging.info("🚀 Database populated successfully.")
     
     tables = ['movie', 'genre', 'movie_genre', 'person', 'movie_actor', 'keyword', 'movie_keyword', 'actor', 'director']
-    count_records = count_records(cursor, tables)
+    cnt = count_records(cursor, tables)
     print("=================================================\n")
     print("Summary of record counts:\n")
-    for table, count in count_records.items():
+    for table, count in cnt.items():
         print(f"{table}: {count} records")
     print("=================================================\n")
-    print("Total number of records: ", sum(count_records))
+    total_recs = sum(count for count in cnt.values() if count is not None)
+    print("Total number of records: ", {total_recs})
 
 
 if __name__ == '__main__':

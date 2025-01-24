@@ -29,29 +29,82 @@ def query_2():
     cursor.execute(query_2_text, (input_2,))
     return cursor.fetchall()
 
-#3 COMPLEX QUERY - Highest rated movie for a given director
+"""""
+WITH RankedMovies AS (
+    SELECT
+        title,
+        director,
+        rating,
+        ROW_NUMBER() OVER (PARTITION BY director ORDER BY rating DESC) AS rank
+    FROM
+        movies
+)
+SELECT
+    title,
+    director,
+    rating
+FROM
+    RankedMovies
+WHERE
+    rank <= 3
+ORDER BY
+    director,
+    rank;
+"""
+
+
+#3 COMPLEX QUERY - 3 highest rated movies for a given director
 # CHECK: how to solve duplicates (distinct??)
 # what details we want to return except title
 def query_3():
     input_3 = input("Enter director's name to see their highest rated movie (e.g., 'Steven Spielberg'): ")
-    query_3_text = """ SELECT DISTINCT m.title 
-                FROM movie m
-                JOIN movie_person m_p ON m.movie_id = m_p.movie_id
-                JOIN person p ON m_p.person_id = p.person_id
-                WHERE p.role = 'Directing'
-                AND p.person_name LIKE %s
-                AND m.vote_average = (
-                    SELECT MAX(m2.vote_average)
-                    FROM movie m2
-                    JOIN movie_person m_p2 ON m2.movie_id = m_p2.movie_id
-                    JOIN person p2 ON m_p2.person_id = p2.person_id
-                    WHERE p2.role = 'Directing'
-                        AND p2.person_name LIKE %s
-                    )"""
+    if False:
+        query_3_text = """" SELECT m.title 
+                        FROM movie m, person p, director d
+                        WHERE p.person_name LIKE %s
+                        AND p.person_id = d.director_id
+                        AND d.director_id = m.director_id
+                        AND m.vote_average = (
+                            SELECT MAX(m2.vote_average)
+                            FROM movie m2, director d2, person p2
+                            WHERE p2.person_name LIKE %s
+                            AND p2.person_id = d2.director_id
+                            AND d2.director_id = m2.director_id
+                            )
+                """
+    else:
+        query_3_text = """
+    SELECT m.title
+    FROM movie m
+    JOIN person p ON m.director_id = p.person_id
+    JOIN director d ON p.person_id = d.director_id
+    WHERE p.person_name LIKE %s
+    AND m.vote_average = (
+                        SELECT MAX(m2.vote_average)
+                        FROM movie m2
+                        JOIN person p2 ON m2.director_id = p2.person_id
+                        JOIN director d2 ON p2.person_id = d2.director_id
+                        WHERE p.person_name LIKE %s
+                        )
+    """
     cursor.execute(query_3_text, (f"%{input_3}%",f"%{input_3}%"))
     return cursor.fetchall()
+"""WITH movies_rated_by_director AS (
+                    SELECT movie_id , director_id, vote_average, ROW_NUMBER() OVER (PARTITION BY director_id ORDER BY vote_average DESC) AS rank
+                    FROM movies
+                    )
+                    SELECT title
+                    FROM movies_rated_by_director mrbd, director d, person p, movie m    
+                    WHERE mrbd.rank <= 3 AND
+                    p.person_name LIKE %s AND
+                    p.person_id = d.director_id AND
+                    d.director_id = m.director_id AND
+                    m.movie_id = mrbd.movie_id
+                    """
 
-#4 COMPLEX QUERY: For each actor in a specific year, in how many movie per genre he participated (group by)
+
+#TODO: the query for a range of years!
+#4 COMPLEX QUERY: For each actor in a specific year (maybe for a specific decade - 1960s), in how many movie per genre he participated (group by)
 '''note that the sum of all the counts of an actor should !not! be equal to the total number of movies he participated in,
 because each movie can have multiple genres'''
 def query_4():
