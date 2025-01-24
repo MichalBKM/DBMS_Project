@@ -4,8 +4,8 @@ import
 from create_db_script import cursor
 
 
-#1 FULL-TEXT - Search words that appear in the movie title or overview
-# what details we want to return except title\overview
+#1 FULL-TEXT - Search words that appear in a movie title or overview
+# TODO: what details we want to return except title\overview
 def query_1():
     print("you can find the movie you want even if you don't remember the title, \
            just enter a word that appears in the title or overview!\n")
@@ -15,7 +15,7 @@ def query_1():
     return cursor.fetchall()
 
 #2 FULL-TEXT - Search keywords that are related to movies
-# what details we want to return except title
+# TODO: what details we want to return except title
 def query_2():
     print("you can find movies that are related to a specific keyword, just enter the keyword!\n")
     input_2 = input("Enter a keyword to see what movies are related to it (e.g., 'silent film'): \n")
@@ -29,7 +29,8 @@ def query_2():
     return cursor.fetchall()
 
 #3 COMPLEX QUERY - 3 highest rated movies for a given director
-def query_3(): #TODO
+# TODO !!!!!!!!!!!!!!!!!
+def query_3(): 
     input_3 = input("Enter director's name to see their highest rated movie (e.g., 'Steven Spielberg'): ")
     if False:
         query_3_text = """" SELECT m.title 
@@ -74,12 +75,17 @@ def query_3(): #TODO
                     m.movie_id = mrbd.movie_id
                     """
 
+# TODO - maybe remove the decade from query_4 and keep it in query 6 
+#               (and simply remove query 3- there is a version of it in the copilot queries anyway)?
 
-#4 COMPLEX QUERY: "Hall of Fame" - for a given decade and sub-genre of comedy, 
+
+#4 COMPLEX QUERY: "Hall of Fame" - for a given decade and sub-genre, 
 # output the first 10 actors who played in the most movies of that sub-genre in that decade
 def query_4():
-    print("we will now present the hall of fame for a sub-genre in a given decade- meaning the actors who played in the most movies of that sub-genre in that decade\n")
-    decade_start = input("Enter a decade see the hall of fame for a sub-genre in that decade (e.g, '1960' will mean the sixties [1960-1969 both included]):\n")
+    print("we will now present the hall of fame for a sub-genre in a given decade- meaning \
+          the actors who played in the most movies of that sub-genre in that decade\n")
+    decade_start = input("Enter a decade see the hall of fame for a sub-genre in that decade \
+                          (e.g, '1960' will mean the sixties [1960-1969 both included]):\n")
     sub_genre = input("Now enter the sub-genre you want to check! (e.g, 'horror'):\n")
     decade_start = int(decade_start)
     decade_end = decade_start + 9
@@ -101,8 +107,8 @@ def query_4():
     cursor.execute(query_4_text, values)
     return cursor.fetchall()
 
-### find your next movie reccomendation!
 #5 COMPLEX QUERY: "hidden gems" - unpopular but highly rated movies for a given year (rating > 7.0 and popularity < average popularity)
+# find your next movie reccomendation!
 def query_5():
     print("we will now present the hidden gems for a given year- meaning the unpopular but highly rated movies for a given year\n")
     input_5 = input("Enter a specific year to get the hidden gems from that year! (e.g, '2001'): \n")
@@ -144,6 +150,9 @@ def query_6():
 ############################################
 #           copilot suggestions:           #
 ############################################
+# some can be used as extra queries? to complete the database idea
+# I did not check them all (I checked 6c, 7)
+
 #6 QUERY: "directors' popular movies" - for a given director, output their most popular movies
 def query_6c():
     print("we will now present the most popular movies for a given director\n")

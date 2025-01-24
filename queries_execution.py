@@ -2,8 +2,7 @@
 import
 '''
 from create_db_script import db, cursor
-from queries_db_script import query_1, query_2, query_3, query_4, query_5
-
+from queries_db_script import *
 
 def main():
     num = int(input("what query do you wish to use?     "))
