@@ -2,7 +2,7 @@
 import
 '''
 from create_db_script import db, cursor
-from queries_db_script import query_1, query_2, query_3, query_4
+from queries_db_script import query_1, query_2, query_3, query_4, query_5
 
 
 def main():
@@ -74,8 +74,18 @@ def main():
     #      QUERY 5     #
     ####################
     elif num == 5:
-        print("Query 5")
-        return
+        results = query_5()
+        # Display the results in a way that fits the query
+        if results:
+            print(f"Found {len(results)} \"hidden gems\" in the specified year:\n")
+            for movie in results:
+                title, avg_rating, popularity = movie
+                print(f"Title: {title}")
+                print(f"Average rating: {avg_rating}")
+                print(f"Popularity: {popularity}")
+                print("-" * 50)  # Separator between movies
+        else:
+            print("No movies found matching your search.")
 
 
 
