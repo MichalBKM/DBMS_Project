@@ -6,6 +6,10 @@ db = mysql.connector.connect(
     user="berkheim1",
     password="berkheim5501"
 )
+# To connect to the database, follow the following steps:
+# 1. Global protect (bring your phone nearby) 
+# Run the following command in your terminal to create an SSH tunnel:
+# ssh -L 3305:localhost:3306 berkheim1@<ip>
 
 cursor = db.cursor()
 cursor.execute("USE berkheim1")
@@ -20,16 +24,19 @@ def index_exists(table_name, index_name):
     """)
     return cursor.fetchone()[0] > 0
 
-# movie: title, release_year, runtime, overview, popularity, votes_average, votes_count
+# movie: movie_id, title, director_id, release_year, runtime, overview, popularity, votes_average, votes_count
+# (many to one relationship - director_id is a foreign key to person_id)
 cursor.execute("""CREATE TABLE IF NOT EXISTS movie (
                  movie_id INT PRIMARY KEY,
                  title VARCHAR(255) NOT NULL,
+                 director_id INT NOT NULL,
                  release_year INT NOT NULL,
                  runtime INT NOT NULL,
                  overview TEXT NOT NULL,
                  popularity FLOAT,
                  vote_average FLOAT,
-                 vote_count INT
+                 vote_count INT,
+                 FOREIGN KEY (director_id) REFERENCES person(person_id)
 )""")
 
 # Altering movie table to support fulltext index
@@ -73,27 +80,41 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS person (
                  person_id INT NOT NULL,
                  person_name VARCHAR(255) NOT NULL,
                  birthday DATE NOT NULL,
-                 role ENUM('Acting', 'Directing') NOT NULL,
-                 PRIMARY KEY (person_id, role)
+                 PRIMARY KEY (person_id)
 )""")
 
 print("✅ Done creating person table")
 
-# movie person: many to many relationship - data about the actors \ crew in a movie
-cursor.execute("""CREATE TABLE IF NOT EXISTS movie_person (
+# director: director_id (is-a person)
+cursor.execute("""CREATE TABLE IF NOT EXISTS director (
+                 director_id INT NOT NULL,
+                 PRIMARY KEY (director_id)
+)""")
+
+print("✅ Done creating director table")
+
+# actor: actor_id (is-a person)
+cursor.execute("""CREATE TABLE IF NOT EXISTS actor (
+                 actor_id INT NOT NULL,
+                 PRIMARY KEY (actor_id)
+)""")
+
+print("✅ Done creating actor table")
+
+# movie_actor: many to many relationship - data about the actors in a movie
+cursor.execute("""CREATE TABLE IF NOT EXISTS movie_actor (
                  movie_id INT,
-                 person_id INT,
-                 role ENUM('Acting', 'Directing') NOT NULL,
-                 PRIMARY KEY (movie_id, person_id, role),
+                 actor_id INT,
+                 PRIMARY KEY (movie_id, actor_id),
                  FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
-                 FOREIGN KEY (person_id) REFERENCES person(person_id)
+                 FOREIGN KEY (actor_id) REFERENCES actor(actor_id)
 )""")
 
 # Create index to support filtering/searching actors or directors by name
-if not index_exists("person", "idx_role_name"):
-    cursor.execute("""CREATE INDEX idx_role_name ON person(role, person_name)""")
+if not index_exists("actor", "idx_role_name"):
+    cursor.execute("""CREATE INDEX idx_role_name ON person(role, actor_id)""")
 
-print("✅ Done creating movie-person table")
+print("✅ Done creating movie_actor table")
 
 # keyword: keyword_id, keyword_name
 cursor.execute("""CREATE TABLE IF NOT EXISTS keyword (

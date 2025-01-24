@@ -3,9 +3,7 @@
 '''
 import
 '''
-import os
 import requests
-import json
 import logging
 import mysql.connector
 from create_db_script import db, cursor
@@ -20,7 +18,7 @@ BASE_URL = 'https://api.themoviedb.org/3/'
 LANG = 'en'
 REGION = 'US'
 GENRE_ID = 35  # Genre ID for comedy movies
-
+MAX_PAGES = 3 # limit to 1000 movies - in each page theres 20 movies
 
 '''
 Fetch helper function
@@ -50,15 +48,16 @@ def fetch_movies(page):
         'page': page,
     })
 
-def insert_movie(movie):
+def insert_movie(movie, director_id):
     # insert movie into movie table
     movie_details = fetch_data(f'movie/{movie["id"]}', {})
     runtime = movie_details.get('runtime', None)
-    movie_query = """INSERT INTO movie (movie_id, title, release_year, runtime, overview, popularity, vote_average, vote_count)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+    movie_query = """INSERT INTO movie (movie_id, title, director_id, release_year, runtime, overview, popularity, vote_average, vote_count)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     values = (
         movie["id"],
         movie.get('title', 'Unknown Title'),
+        director_id,
         movie.get('release_date')[:4],
         runtime,
         movie.get('overview'),
@@ -66,8 +65,7 @@ def insert_movie(movie):
         movie.get('vote_average'),
         movie.get('vote_count')
     )
-    #printing values to check if the values are correct
-    #print("insert_movie:" , values)
+
     try:
         cursor.execute(movie_query, values)
         db.commit()
@@ -85,22 +83,26 @@ def insert_movie(movie):
             db.commit()
     except mysql.connector.Error as e:
         logging.error(f"❌ Error: Failed to insert genre for movie {movie.get('title')}: {e}")
+    
+    return movie["id"]
 
 
 def process_movie(movie):
-    insert_movie(movie)
-    populate_person(movie["id"])
+    crew = populate_person(movie["id"])
+    director_id = crew[0]
+    movie_id = insert_movie(movie, director_id)
+    for actor_id in crew[1:]:
+        insert_movie_actor(movie_id, actor_id)
     populate_movie_keywords(movie["id"])
-    logging.info(f"☑️ Inserted movie {movie.get('title')} into database.")
+    logging.info(f"☑️  Inserted movie {movie.get('title')} into database.")
 
 
 def populate_movies():
     total_pages = 1
     page = 1
-    max_pages = 50 # limit to 1000 movies - in each page theres 20 movies
 
-    while page <= total_pages and page <= max_pages:
-        logging.info(f"Fetching page {page} of {max_pages}...")
+    while page <= total_pages and page <= MAX_PAGES:
+        logging.info(f"Fetching page {page} of {MAX_PAGES}...")
         data = fetch_movies(page)
         if not data:
             break
@@ -140,47 +142,61 @@ def fetch_person(movie_id):
     return fetch_data(f'movie/{movie_id}/credits', {})
 
 def insert_person(person, role):
-    query = f"""INSERT IGNORE INTO person (person_id, person_name, birthday, role)
-            VALUES (%s, %s,%s, %s)"""
+    query = f"""INSERT IGNORE INTO person (person_id, person_name, birthday)
+            VALUES (%s, %s,%s)"""
+    query_with_role = ""
+    if role == "Directing":
+        query_with_role = f"""INSERT IGNORE INTO director (director_id) VALUES (%s)"""
+    elif role == "Acting":
+        query_with_role = f"""INSERT IGNORE INTO actor (actor_id) VALUES (%s)"""
+
     endpoint = f'person/{person["id"]}'
     person_details = fetch_data(endpoint, {})
-    if person_details:
+    if person_details: # if person_details is not empty
         birthday = person_details.get('birthday', None)
     else:
         logging.error(f"❌ Error: Failed to fetch person details for {person['id']}")
-    values = (person['id'], person['name'], birthday, role)
-    #printing values to check if the values are correct
-    #print(values)
+    values = (person['id'], person['name'], birthday)
+    values_with_role = (person['id'])
     try:
+        cursor.execute(query_with_role, values_with_role)
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
         logging.error(f"❌ Error: Failed to insert person {person['name']}: {e}")
 
 
-def insert_movie_person(movie_id, person_id, role):
-    query = """INSERT INTO movie_person (movie_id, person_id, role) 
-            VALUES (%s, %s, %s)"""
-    values = (movie_id, person_id, role)
+def insert_movie_actor(movie_id, actor_id):
+    query = """INSERT INTO movie_actor (movie_id, actor_id) 
+            VALUES (%s, %s)"""
+    values = (movie_id, actor_id)
     try:
         cursor.execute(query, values)
         db.commit()
     except mysql.connector.Error as e:
-        logging.error(f"❌ Error: Failed to insert movie-person {movie_id, person_id}: {e}")
+        logging.error(f"❌ Error: Failed to insert movie-actor {movie_id, actor_id}: {e}")
 
 def populate_person(movie_id):
     credits = fetch_person(movie_id)
-    if credits:
+    has_director = False
+    crew = [] # the director will be the first person in the crew list, meaning crew[0] = director_id
+              # the rest of the crew will be actors, indices 1-5
+              # we need to return the id of the director to insert into the movie table
+              # and we need to return the ids of the actors to insert into the movie_actor table
+    if credits: # if credits is not empty
+        for p in credits.get('crew'):
+            if p['job'] == 'Director' and not has_director:
+                has_director = True
+                insert_person(p, "Directing")
+                crew.append(p['id'])
+
         for p in credits.get('cast')[:5]:
             if p['known_for_department'] == 'Acting':
                 insert_person(p, "Acting")
-                insert_movie_person(movie_id, p['id'], 'Acting')
-        
-        for p in credits.get('crew'):
-            if p['job'] == 'Director':
-                insert_person(p, "Directing")
-                insert_movie_person(movie_id, p['id'], 'Directing')
-
+                crew.append(p['id'])
+    
+    return crew
+##TODO: ER diagram- add not null arrow to director
 '''
 Keyword handling
 '''
@@ -252,7 +268,7 @@ def main():
     print("====================================\n")
     logging.info("🚀 Database populated successfully.")
     
-    tables = ['movie', 'genre', 'movie_genre', 'person', 'movie_person', 'keyword', 'movie_keyword']
+    tables = ['movie', 'genre', 'movie_genre', 'person', 'movie_actor', 'keyword', 'movie_keyword', 'actor', 'director']
     count_records = count_records(cursor, tables)
     print("=================================================\n")
     print("Summary of record counts:\n")
