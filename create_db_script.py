@@ -82,6 +82,8 @@ def create_tables():
                     FOREIGN KEY (director_id) REFERENCES director(director_id)
                     )""")
 
+    print("\n✅ Done creating movie table")
+
     # Altering movie table to support fulltext index
     cursor.execute("""ALTER TABLE movie ADD FULLTEXT(title, overview)""")
 
@@ -97,7 +99,7 @@ def create_tables():
     if not index_exists("movie", "idx_vote_average"):
         cursor.execute("""CREATE INDEX idx_vote_average ON movie(vote_average)""")
 
-    print("\n✅ Done creating movie table")
+    print("\n✅ Done altering movie table for FULLTEXT + indexes")
 
     # novie_genre: movie_id, genre_id
     # (many to many relationship - there can be multiple genres for a movie)
@@ -109,7 +111,7 @@ def create_tables():
                     FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
                     )""")
 
-    print("\n✅ Done creating movie-genre table")
+    print("\n✅ Done creating movie_genre table")
 
     # movie_actor: movie_id, actor_id
     # (many to many relationship - data about the actors in a movie)
@@ -144,11 +146,11 @@ def create_tables():
                     FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
     )""")
 
-    print("\n✅ Done creating movie-keyword table")
+    print("\n✅ Done creating movie_keyword table")
 
     db.commit()
 
-    print("====================================\n")
+    print("=" * 50)
     print("🚀 Done creating database successfully!\n")
 
 if __name__ == '__main__':
