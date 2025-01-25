@@ -101,7 +101,7 @@ def process_movie(movie):
     for actor_id in actors:
         insert_movie_actor(movie_id, actor_id)
     populate_movie_keywords(movie_id)
-    logging.info(f"☑️  Inserted movie {movie.get('title')} into database.")
+    logging.info(f"☑️  Inserted movie \"{movie.get('title')}\" into database.")
 
 '''
 going through the pages of the API (1,...,MAX_PAGES) and inserting the movies into the database
@@ -242,7 +242,7 @@ def fetch_keywords(movie_id):
     if response.status_code == 200:
         return response.json()['keywords']
     else:
-        logging.info(f"❌ Error: Failed to fetch keywords for movie {movie_id}: " + str(response.status_code))
+        logging.error(f"❌ Error: Failed to fetch keywords for movie {movie_id}: " + str(response.status_code))
         return None
 
 '''
@@ -297,7 +297,7 @@ def count_records(cursor, tables):
             cursor.execute(query)
             count = cursor.fetchone()[0]
             record_counts[table] = count
-            logging.info(f"Total records in {table}: {count}")
+            #logging.info(f"Total records in {table}: {count}")
         except Exception as e:
             logging.error(f"❌ Error counting records in table {table}: {e}")
             record_counts[table] = None
@@ -320,7 +320,7 @@ def main():
     print("Summary of record counts:\n")
     for table, count in cnt.items():
         if count is not None:
-            print(f"{table}: {count} records")
+            print(f"Total records in {table}: {count}")
         else:
             print(f"{table}: Error counting records")
     print("=================================================\n")

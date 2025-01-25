@@ -47,7 +47,7 @@ def create_tables():
                     PRIMARY KEY (person_id)
                     )""")
 
-    print("\n✅ Done creating person table")
+    print("✅ Done creating person table")
 
     # director: director_id (is-a person)
     cursor.execute("""CREATE TABLE IF NOT EXISTS director (
@@ -56,7 +56,7 @@ def create_tables():
                     FOREIGN KEY (director_id) REFERENCES person(person_id)
                     )""")
 
-    print("\n✅ Done creating director table")
+    print("✅ Done creating director table")
 
     # actor: actor_id (is-a person)
     cursor.execute("""CREATE TABLE IF NOT EXISTS actor (
@@ -65,7 +65,7 @@ def create_tables():
                     FOREIGN KEY (actor_id) REFERENCES person(person_id)
                     )""")
 
-    print("\n✅ Done creating actor table")
+    print("✅ Done creating actor table")
 
     # movie: movie_id, title, director_id, release_year, runtime, overview, popularity, votes_average, votes_count
     # (one to many relationship - director_id is a foreign key to director_id - each movie has one director)
@@ -82,7 +82,7 @@ def create_tables():
                     FOREIGN KEY (director_id) REFERENCES director(director_id)
                     )""")
 
-    print("\n✅ Done creating movie table")
+    print("✅ Done creating movie table")
 
     # Altering movie table to support fulltext index
     cursor.execute("""ALTER TABLE movie ADD FULLTEXT(title, overview)""")
@@ -99,7 +99,7 @@ def create_tables():
     if not index_exists("movie", "idx_vote_average"):
         cursor.execute("""CREATE INDEX idx_vote_average ON movie(vote_average)""")
 
-    print("\n✅ Done altering movie table for FULLTEXT + indexes")
+    print("✅ Done altering movie table for FULLTEXT + indexes")
 
     # novie_genre: movie_id, genre_id
     # (many to many relationship - there can be multiple genres for a movie)
@@ -111,7 +111,7 @@ def create_tables():
                     FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
                     )""")
 
-    print("\n✅ Done creating movie_genre table")
+    print("✅ Done creating movie_genre table")
 
     # movie_actor: movie_id, actor_id
     # (many to many relationship - data about the actors in a movie)
@@ -123,7 +123,7 @@ def create_tables():
                     FOREIGN KEY (actor_id) REFERENCES actor(actor_id)
                     )""")
 
-    print("\n✅ Done creating movie_actor table")
+    print("✅ Done creating movie_actor table")
 
     # keyword: keyword_id, keyword_name
     cursor.execute("""CREATE TABLE IF NOT EXISTS keyword (
@@ -134,7 +134,7 @@ def create_tables():
     # Altering keyword table to support fulltext index
     cursor.execute("""ALTER TABLE keyword ADD FULLTEXT(keyword_name)""")
 
-    print("\n✅ Done creating keyword table")
+    print("✅ Done creating keyword table")
 
     # movie_keyword: movie_id, keyword_id
     # (many to many relationship - data about the keywords of a movie)
@@ -146,7 +146,7 @@ def create_tables():
                     FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
     )""")
 
-    print("\n✅ Done creating movie_keyword table")
+    print("✅ Done creating movie_keyword table")
 
     db.commit()
 
