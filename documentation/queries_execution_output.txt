@@ -1,3 +1,11 @@
+MAIN WEBPAGE:
+Select * FROM movie ORDER BY popularity DESC LIMIT 4
+
+939243	Sonic the Hedgehog 3	93364	2024	110	Sonic, Knuckles, and Tails reunite against a powerful new adversary, Shadow, a mysterious villain with powers unlike anything they have faced before. With their abilities outmatched in every way, Team Sonic must seek out an unlikely alliance in hopes of ...	5790.38	7.859	1150
+993710	Back in Action	71600	2025	114	Fifteen years after vanishing from the CIA to start a family, elite spies Matt and Emily jump back into the world of espionage when their cover is blown.	2948.64	6.7	571
+1241982	Moana 2	4524084	2024	100	After receiving an unexpected call from her wayfinding ancestors, Moana journeys alongside Maui and a new crew to the far seas of Oceania and into dangerous, long-lost waters for an adventure unlike anything she's ever faced.	1876.43	7.1	948
+845781	Red One	51851	2024	124	After Santa Claus (codename: Red One) is kidnapped, the North Pole's Head of Security must team up with the world's most infamous tracker in a globe-trotting, action-packed mission to save Christmas.	783.352	7.12	2180					
+
 Q1 OUTPUT:
 Enter words to search in movie the title \ overview (e.g., 'modern'):  space
                                        title                                             genres  release year                                           overview  rating (out of 10)
