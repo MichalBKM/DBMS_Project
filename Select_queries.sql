@@ -11,9 +11,7 @@
 -- AND movie.movie_id = movie_person.movie_id
 -- AND movie_person.person_id = person.person_id
 
-
-SELECT genre.genre_name 
-FROM genre, movie_genre, movie
-WHERE movie.title LIKE 'Forrest Gump'
-AND movie.movie_id = movie_genre.movie_id
-AND movie_genre.genre_id = genre.genre_id
+SELECT keyword.keyword_name FROM movie, keyword, movie_keyword
+WHERE movie.movie_id = movie_keyword.movie_id
+AND movie_keyword.keyword_id = keyword.keyword_id
+AND movie.title = "To All the Boys: P.S. I Still Love You"

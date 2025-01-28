@@ -326,6 +326,8 @@ def main():
     print("=================================================\n")
     total_recs = sum(count for count in cnt.values() if count is not None)
     print("Total number of records: ", {total_recs})
+    db.close()
+    cursor.close()
 
 
 if __name__ == '__main__':

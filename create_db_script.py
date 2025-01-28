@@ -13,13 +13,14 @@
 
 '''
 TODO LIST:
-1.pandas in queries execution                X
+1.pandas in queries execution                V
 2.finish queries                             V
-3.fill the database?                         X
+3.fill the database?                         ?!
+3.5. db close                                V
 4.run the queries for the user manual        X
 5.documentation                              X   
 6.requirements - pip...                      X
-7. indices                                   X
+7. indices                                   V
 '''
 
 import mysql.connector
@@ -49,9 +50,7 @@ def create_tables():
                     genre_id INT PRIMARY KEY,
                     genre_name VARCHAR(255) NOT NULL
                     )""")
-
     print("✅ Done creating genre table")
-
 
     # person: person_id, person_name, birthday
     cursor.execute("""CREATE TABLE IF NOT EXISTS person (
@@ -60,7 +59,6 @@ def create_tables():
                     birthday DATE NOT NULL,
                     PRIMARY KEY (person_id)
                     )""")
-
     print("✅ Done creating person table")
 
     # director: director_id (is-a person)
@@ -69,7 +67,6 @@ def create_tables():
                     PRIMARY KEY (director_id),
                     FOREIGN KEY (director_id) REFERENCES person(person_id)
                     )""")
-
     print("✅ Done creating director table")
 
     # actor: actor_id (is-a person)
@@ -78,7 +75,6 @@ def create_tables():
                     PRIMARY KEY (actor_id),
                     FOREIGN KEY (actor_id) REFERENCES person(person_id)
                     )""")
-
     print("✅ Done creating actor table")
 
     # movie: movie_id, title, director_id, release_year, runtime, overview, popularity, votes_average, votes_count
@@ -95,7 +91,6 @@ def create_tables():
                     vote_count INT,
                     FOREIGN KEY (director_id) REFERENCES director(director_id)
                     )""")
-
     print("✅ Done creating movie table")
 
     # Altering movie table to support fulltext index
@@ -124,7 +119,6 @@ def create_tables():
                     FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
                     FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
                     )""")
-
     print("✅ Done creating movie_genre table")
 
     # movie_actor: movie_id, actor_id
@@ -136,7 +130,6 @@ def create_tables():
                     FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
                     FOREIGN KEY (actor_id) REFERENCES actor(actor_id)
                     )""")
-
     print("✅ Done creating movie_actor table")
 
     # keyword: keyword_id, keyword_name
@@ -147,6 +140,10 @@ def create_tables():
 
     # Altering keyword table to support fulltext index
     cursor.execute("""ALTER TABLE keyword ADD FULLTEXT(keyword_name)""")
+
+     # Create index to support **inserting** unique keywords
+    if not index_exists("keyword", "idx_keyword_name"):
+        cursor.execute("""CREATE INDEX idx_keyword_name ON keyword(keyword_name)""")
 
     print("✅ Done creating keyword table")
 
@@ -159,7 +156,6 @@ def create_tables():
                     FOREIGN KEY (movie_id) REFERENCES movie(movie_id),
                     FOREIGN KEY (keyword_id) REFERENCES keyword(keyword_id)
     )""")
-
     print("✅ Done creating movie_keyword table")
 
     db.commit()
