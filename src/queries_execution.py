@@ -27,6 +27,9 @@ def main():
             df = resultsToDF(results, ["title", "genres", "release year", "overview", "rating (out of 10)"])
             if df is not None:
                 print(df)
+            else:
+                print("No results found")
+
 
         ####################
         #      QUERY 2     #

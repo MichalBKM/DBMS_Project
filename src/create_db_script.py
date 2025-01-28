@@ -15,7 +15,7 @@
 TODO LIST:
 1.pandas in queries execution                V
 2.finish queries                             V
-3.fill the database?                         !!
+3.fill the database?                         V
 3.5. db close                                V
 4.run the queries for the user manual        X
 5.documentation:                             X 
@@ -28,7 +28,7 @@ TODO LIST:
         - explain optimizations & indices
          - detail the main 5 queries
          - outline code structure and API usage
-6.requirements - pip freeze                  X
+6.requirements - pip freeze                  V
 7. indices                                   V
 '''
 
