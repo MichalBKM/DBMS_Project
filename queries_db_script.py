@@ -4,7 +4,7 @@ import
 from create_db_script import cursor
 
 #1 FULL-TEXT - Search words that appear in a movie title or overview
-#              output the title of the movie, its genre, overview, rating
+#              output the title of the movie, its genres, overview, rating
 def query_1():
     print("""You can find the movie you want even if you don't remember the title, 
           just enter a single word that appears in the title or overview!\n""")
@@ -35,7 +35,7 @@ SELECT m.title, g.genre_name, m.release_year, m.overview, m.vote_average
                     ORDER BY m.release_year DESC, m.vote_average DESC;
 """
 
-#2 FULL-TEXT - Search keywords that are related to movies
+#2 FULL-TEXT - Search movies by keywords - enter a word to search by all the keywords that contain it
 #              output the title of the movie, its overview, rating, release year and director
 def query_2():
     print("You can find movies that are related to a specific keyword, just enter the keyword!\n")
@@ -73,7 +73,6 @@ def query_3():
                     ORDER BY movie_count DESC
                     LIMIT 20;
                     """
-  
     cursor.execute(query_3_text, (input_3,))
     return cursor.fetchall()
  
