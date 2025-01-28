@@ -1,11 +1,6 @@
-import mysql.connector
-
-db = mysql.connector.connect(
-    host="127.0.0.1",
-    port=3305,
-    user="berkheim1",
-    password="berkheim5501"
-)
+####################
+#      NOTES       #
+####################
 # To connect to the database, follow the following steps:
 # 1. Global protect (bring your phone nearby) 
 # 2. Run the following command in your terminal to create an SSH tunnel:
@@ -16,6 +11,25 @@ db = mysql.connector.connect(
 # 4. you can open MySQL-Workbench for debugging and running simple queries
 # you are ready!
 
+'''
+TODO LIST:
+1.pandas in queries execution                X
+2.finish queries                             V
+3.fill the database?                         X
+4.run the queries for the user manual        X
+5.documentation                              X   
+6.requirements - pip...                      X
+7. indices                                   X
+'''
+
+import mysql.connector
+
+db = mysql.connector.connect(
+    host="127.0.0.1",
+    port=3305,
+    user="berkheim1",
+    password="berkheim5501"
+)
 cursor = db.cursor()
 cursor.execute("USE berkheim1")
 

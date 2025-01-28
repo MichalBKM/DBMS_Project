@@ -1,8 +1,18 @@
 '''
 import
 '''
-from create_db_script import db, cursor
+import pandas as pd
 from queries_db_script import *
+
+############################
+#      HELPER FUNCTION     #
+############################
+def resultsToDF(results, columns):
+    if results:
+        df = pd.DataFrame(results, columns=columns)
+        return df
+    else:
+        return None
 
 def main():
     num = int(input("what query do you wish to use?     "))
@@ -11,85 +21,86 @@ def main():
     ####################
     if num == 1:
         results = query_1()
-        # Display the results in a way that fits the query
-        if results:
-            print(f"\nFound {len(results)} movies matching your search:\n")
-            for movie in results:
-                title, overview = movie
-                print(f"Title: {title}")
-                print(f"Overview: {overview}")
-                print("-" * 50)  # Separator between movies
-        else:
-            print("No movies found matching your search.")
+        df = resultsToDF(results, ["title", "genres", "release year", "overview", "vote average"])
+        if df is not None:
+            print(df)
 
     ####################
     #      QUERY 2     #
     ####################
     elif num == 2:
         results = query_2()
-        # Display the results in a way that fits the query
-        if results:
-            print(f"\nFound {len(results)} movies matching your search:\n")
-            for movie in results:
-                title = movie[0]
-                print(f"Title: {title}")
-                print("-" * 50)  # Separator between movies
+        df = resultsToDF(results, ["title", "release year", "director", "overview", "vote average"])
+        if df is not None:
+            print(df)
         else:
-            print("No movies found matching your search.")
+            print("No results found")
    
     ####################
     #      QUERY 3     #
     ####################
     elif num == 3:
         results = query_3()
-        # Display the results in a way that fits the query
-        if results:
-            print(f"\nFound {len(results)} movies matching your search:\n")
-            for movie in results:
-                title = movie[0]
-                print(f"Title: {title}")
-                print("-" * 50)  # Separator between movies
+        df = resultsToDF(results, ["name", "movie count", "id"])[["name", "movie count"]]
+        if df is not None:
+            print(df)
         else:
-            print("No movies found matching your search.")
+            print("No results found")
     
     ####################
     #      QUERY 4     #
     ####################
     elif num == 4:
         results = query_4()
-        # Display the results in a way that fits the query
-        if results:
-            print(f"\nFound {len(results)} movies matching your search in the specified decade and subgenre:\n")
-            for movie in results:
-                movie_count, person_name = movie[0:2]
-                print(f"actor: {person_name}")
-                print(f"count: {movie_count}")
-                print("-" * 50)  # Separator between movies
+        df = resultsToDF(results, ["movie count", "name", "id", "birthday"])[["movie count", "name", "birthday"]]
+        if df is not None:
+            print(df)
         else:
-            print("No movies found matching your search.")
-        
+            print("No results found")
         
     ####################
     #      QUERY 5     #
     ####################
     elif num == 5:
         results = query_5()
-        # Display the results in a way that fits the query
-        if results:
-            print(f"\nFound {len(results)} \"hidden gems\" in the specified year:\n")
-            for movie in results:
-                title, avg_rating, popularity = movie
-                print(f"Title: {title}")
-                print(f"Average rating: {avg_rating}")
-                print(f"Popularity: {popularity}")
-                print("-" * 50)  # Separator between movies
+        df = resultsToDF(results, ["title", "release year", "overview", "rating", "popularity"])
+        if df is not None:
+            print(df)
         else:
-            print("No movies found matching your search.")
+            print("No results found")
 
+    ####################
+    #      QUERY 6     #
+    ####################
+    elif num == 6:
+        results = query_6()
+        df = resultsToDF(results, ["title", "overview", "release year", "popularity"])
+        if df is not None:
+            print(df)
+        else:
+            print("No results found")
 
-
+    ####################
+    #      QUERY 7     #
+    ####################
+    elif num == 7:
+        results = query_7()
+        df = resultsToDF(results, ["title", "overview", "release year", "popularity"])
+        if df is not None:
+            print(df)
+        else:
+            print("No results found")
     
-
+    ####################
+    #      QUERY 8     #
+    ####################
+    elif num == 8:
+        results = query_8()
+        df = resultsToDF(results, ["genre name", "movie count"])
+        if df is not None:
+            print(df)
+        else:
+            print("No results found")
 
 if __name__ == '__main__':
     main()
