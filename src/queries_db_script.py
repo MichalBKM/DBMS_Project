@@ -52,7 +52,7 @@ def query_2():
     return cursor.fetchall()
 
 #3 COMPLEX QUERY: "Director's favourite actors" - which actors have appeared in the 10 most popular movies of a given director
-#                 and how many times have they appeared?
+#                 and how many times have they appeared? (show only actors who coopporated with this director in more than one movie)
 def query_3():
     print("Find the actors who appeared in the 10 most popular movies of your favourite director and how many times they appeared!\n")
     input_3 = input("Enter a director's name (e.g, 'John Lasseter'):    ")
@@ -70,8 +70,8 @@ def query_3():
                     JOIN actor a ON m_a.actor_id = a.actor_id
                     JOIN person p ON a.actor_id = p.person_id
                     GROUP BY p.person_name, p.person_id
-                    ORDER BY movie_count DESC
-                    LIMIT 20;
+                    HAVING movie_count >= 2
+                    ORDER BY movie_count DESC;
                     """
     cursor.execute(query_3_text, (input_3,))
     return cursor.fetchall()
