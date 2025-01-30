@@ -17,8 +17,8 @@ TODO LIST:
 2.finish queries                             V
 3.fill the database?                         V
 3.5. db close                                V
-4.run the queries for the user manual        X
-5.documentation:                             X 
+4.run the queries for the user manual        V
+5.documentation:                             V 
     a. user manual:
         - overview of app functionality
         - desgined app (with queries examples)

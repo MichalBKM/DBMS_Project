@@ -56,7 +56,7 @@ def query_2():
 def query_3():
     print("Find the actors who appeared in the 10 most popular movies of your favourite director and how many times they appeared!\n")
     input_3 = input("Enter a director's name (e.g, 'John Lasseter'):    ")
-    query_3_text = """SELECT p.person_name AS name, COUNT(m_a.actor_id) AS movie_count, p.person_id
+    query_3_text = """SELECT p.person_name AS name, p.birthday, COUNT(m_a.actor_id) AS movie_count, p.person_id
                     FROM (
                             SELECT m.movie_id
                             FROM movie m

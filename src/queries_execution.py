@@ -47,9 +47,9 @@ def main():
         ####################
         elif num == 3:
             results = query_3()
-            df = resultsToDF(results, ["name", "movie count", "id"])
+            df = resultsToDF(results, ["name", "birthday", "movie count", "id"])
             if df is not None:
-                print(df[["name", "movie count"]])
+                print(df[["name", "birthday", "movie count"]])
             else:
                 print("No results found")
         
