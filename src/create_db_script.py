@@ -11,26 +11,6 @@
 # 4. you can open MySQL-Workbench for debugging and running simple queries
 # you are ready!
 
-'''
-TODO LIST:
-1.pandas in queries execution                V
-2.finish queries                             V
-3.fill the database?                         V
-3.5. db close                                V
-4.run the queries for the user manual        V
-5.documentation:                             V 
-    a. user manual:
-        - overview of app functionality
-        - desgined app (with queries examples)
-    b. system documentation 
-        - describe database schema structure
-        - reasoning for choosing database design
-        - explain optimizations & indices
-         - detail the main 5 queries
-         - outline code structure and API usage
-6.requirements - pip freeze                  V
-7. indices                                   V
-'''
 
 import mysql.connector
 
